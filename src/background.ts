@@ -62,6 +62,17 @@ class Background {
         return fs.readFileSync(vscodePath.cssPath, 'utf-8');
     }
 
+     /**
+     * 获取 workbench.main.js 文件内容
+     * 
+     * @private
+     * @returns {string} 
+     * @memberof Background
+     */
+    private getMainJSContent(): string {
+        return fs.readFileSync(vscodePath.mainJsPath, 'utf-8');
+    }
+
     /**
      * 设置 css 文件内容
      * 
@@ -73,6 +84,16 @@ class Background {
         fs.writeFileSync(vscodePath.cssPath, content, 'utf-8');
     }
 
+    /**
+     * 设置 workbench.main.js 文件内容
+     * 
+     * @private
+     * @param {string} content 
+     * @memberof Background
+     */
+    private saveMainJSContent(content: string): void {
+        fs.writeFileSync(vscodePath.mainJsPath, content, 'utf-8');
+    }
 
     /**
      * 初始化
@@ -197,8 +218,13 @@ class Background {
         let cssContent = this.getCssContent();
         cssContent = this.clearCssContent(cssContent);
         cssContent += content;
-
         this.saveCssContent(cssContent);
+
+        // 去除[不受支持]提示
+        let jsContent = this.getMainJSContent();
+        jsContent = this.removePureDetect(jsContent);
+        this.saveMainJSContent(jsContent);
+        
         vsHelp.showInfoRestart('Background has been changed! Please restart.');
 
     }
@@ -220,6 +246,19 @@ class Background {
             console.log(ex);
             return false;
         }
+    }
+
+    /**
+     * 删除[不受支持]
+     * 
+     * @private
+     * @param {string} content 
+     * @returns {string} 
+     * @memberof Background
+     */
+    private removePureDetect(content: string): string {
+        content = content.replace("this.properties.isPure||", 'true||')
+        return content;
     }
 
     /**
